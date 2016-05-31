@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import javax.servlet.annotation.WebServlet;
 
-import org.vaadin.am4v.ApplicationModelProperty;
+import org.vaadin.am4v.framework.ApplicationModelProperty;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
