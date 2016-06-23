@@ -1,6 +1,7 @@
 package org.vaadin.am4v.framework;
 
 import com.vaadin.data.util.ObjectProperty;
+import org.vaadin.am4v.framework.model.ApplicationModel;
 
 public class WindowApplicationModel extends ApplicationModel {
 

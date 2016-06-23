@@ -2,13 +2,9 @@ package org.vaadin.am4v.demo;
 
 import java.io.Serializable;
 
-import javax.servlet.annotation.WebServlet;
+import org.vaadin.am4v.framework.model.ApplicationProperty;
 
-import org.vaadin.am4v.framework.ApplicationModelProperty;
-
-import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -38,16 +34,16 @@ public class ApplicationModelDemoUI extends UI {
     }
 
     public static class MyApplicationModel implements Serializable {
-        private final ApplicationModelProperty<String> myFirstProperty = new ApplicationModelProperty<>("",
-            String.class, false, true);
-        private final ApplicationModelProperty<String> mySecondProperty = new ApplicationModelProperty<>("",
-            String.class, false, false);
+        private final ApplicationProperty<String> myFirstProperty = new ApplicationProperty<>("", String.class, false,
+            true);
+        private final ApplicationProperty<String> mySecondProperty = new ApplicationProperty<>("", String.class, false,
+            false);
 
-        public ApplicationModelProperty<String> getMyFirstProperty() {
+        public ApplicationProperty<String> getMyFirstProperty() {
             return myFirstProperty;
         }
 
-        public ApplicationModelProperty<String> getMySecondProperty() {
+        public ApplicationProperty<String> getMySecondProperty() {
             return mySecondProperty;
         }
 
@@ -56,10 +52,12 @@ public class ApplicationModelDemoUI extends UI {
             mySecondProperty.setEnabled(!myFirstProperty.isEnabled());
         }
     }
-
-    @VaadinServletConfiguration(ui = ApplicationModelDemoUI.class, productionMode = false)
-    @WebServlet(urlPatterns = "/*")
-    public static class Servlet extends VaadinServlet {
-
-    }
+    /*
+     * @VaadinServletConfiguration(ui = ApplicationModelDemoUI.class, productionMode = false)
+     * 
+     * @WebServlet(urlPatterns = "/*")
+     * public static class Servlet extends VaadinServlet {
+     * 
+     * }
+     */
 }

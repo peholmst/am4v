@@ -1,4 +1,4 @@
-package org.vaadin.am4v.framework;
+package org.vaadin.am4v.framework.model;
 
 import com.vaadin.ui.Notification;
 
@@ -15,6 +15,6 @@ public interface NotificationStrategy {
     }
 
     static NotificationStrategy getDefault() {
-        return Notification::show;
+        return (caption, message, type) -> Notification.show(caption, message, type);
     }
 }

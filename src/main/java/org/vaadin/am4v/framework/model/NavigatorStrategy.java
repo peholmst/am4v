@@ -1,4 +1,4 @@
-package org.vaadin.am4v.framework;
+package org.vaadin.am4v.framework.model;
 
 import java.io.Serializable;
 
@@ -9,6 +9,6 @@ public interface NavigatorStrategy extends Serializable {
     void navigateTo(String view);
 
     static NavigatorStrategy getDefault() {
-        return UI.getCurrent().getNavigator()::navigateTo;
+        return (NavigatorStrategy) view -> UI.getCurrent().getNavigator().navigateTo(view);
     }
 }

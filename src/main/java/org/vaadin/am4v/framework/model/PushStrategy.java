@@ -1,4 +1,4 @@
-package org.vaadin.am4v.framework;
+package org.vaadin.am4v.framework.model;
 
 import java.io.Serializable;
 
@@ -9,6 +9,6 @@ public interface PushStrategy extends Serializable {
     void execute(Runnable job);
 
     static PushStrategy getDefault() {
-        return UI.getCurrent()::access;
+        return (PushStrategy) job -> UI.getCurrent().access(job);
     }
 }
