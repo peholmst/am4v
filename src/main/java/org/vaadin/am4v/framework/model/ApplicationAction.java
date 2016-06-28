@@ -1,5 +1,6 @@
 package org.vaadin.am4v.framework.model;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -152,7 +153,11 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
         bindings.unbind(view);
     }
 
-    public interface ActionWorker {
+    /**
+     * 
+     */
+    @FunctionalInterface
+    public interface ActionWorker extends Serializable {
         void execute(ApplicationAction action);
     }
 }

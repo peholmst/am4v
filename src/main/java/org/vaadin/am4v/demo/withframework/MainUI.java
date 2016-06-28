@@ -2,11 +2,14 @@ package org.vaadin.am4v.demo.withframework;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
 
+@Theme(value = ValoTheme.THEME_NAME)
 public class MainUI extends UI {
 
     private final MainModel mainModel = new MainModel();

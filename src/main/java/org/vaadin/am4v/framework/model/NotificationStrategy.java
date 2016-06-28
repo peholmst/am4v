@@ -1,5 +1,6 @@
 package org.vaadin.am4v.framework.model;
 
+import com.vaadin.server.Page;
 import com.vaadin.ui.Notification;
 
 public interface NotificationStrategy {
@@ -15,6 +16,12 @@ public interface NotificationStrategy {
     }
 
     static NotificationStrategy getDefault() {
-        return (caption, message, type) -> Notification.show(caption, message, type);
+        return (caption, message, type) -> {
+            if (Page.getCurrent() != null) {
+                Notification.show(caption, message, type);
+            } else {
+                throw new IllegalStateException("No Page bound to current thread");
+            }
+        };
     }
 }

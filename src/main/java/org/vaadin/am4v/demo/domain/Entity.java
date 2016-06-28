@@ -1,17 +1,23 @@
 package org.vaadin.am4v.demo.domain;
 
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
-public abstract class Entity {
+public abstract class Entity implements Serializable, Cloneable {
 
     private final UUID uuid;
 
     public Entity(UUID uuid) {
-        this.uuid = uuid;
+        this.uuid = Objects.requireNonNull(uuid);
     }
 
     public Entity() {
         this.uuid = UUID.randomUUID();
+    }
+
+    public Entity(Entity original) {
+        this.uuid = Objects.requireNonNull(original).getUuid();
     }
 
     public UUID getUuid() {
@@ -34,5 +40,14 @@ public abstract class Entity {
     @Override
     public int hashCode() {
         return uuid.hashCode();
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new InternalError("Could not clone entity", ex);
+        }
     }
 }
