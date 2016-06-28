@@ -18,8 +18,12 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Component;
 
 /**
+ * An extended version of the Vaadin {@link ObjectProperty} that adds support for enabling/disabling, showing/hiding
+ * and validating the property. Properties can be bound to UI components such as different input fields.
+ * <p>
+ * Typically the properties will be defined in an {@link ApplicationModel}.
  * 
- * @param <T>
+ * @see ApplicationAction
  */
 public class ApplicationProperty<T> extends ObjectProperty<T>
     implements EnabledChangeNotifier, VisibleChangeNotifier, Validatable {
@@ -32,18 +36,47 @@ public class ApplicationProperty<T> extends ObjectProperty<T>
     private boolean visible = true;
     private boolean invalidAllowed = true;
 
+    /**
+     * Creates a new application property.
+     * 
+     * @see ObjectProperty#ObjectProperty(Object)
+     * @param value the value of the property (must not be {@code null}).
+     */
     public ApplicationProperty(T value) {
         super(value);
     }
 
+    /**
+     * Creates a new application property.
+     * 
+     * @see ObjectProperty#ObjectProperty(Object, Class)
+     * @param value the value of the property.
+     * @param type the type of the property value.
+     */
     public ApplicationProperty(T value, Class<T> type) {
         super(value, type);
     }
 
+    /**
+     * Creates a new application property.
+     *
+     * @see ObjectProperty#ObjectProperty(Object, Class, boolean)
+     * @param value the value of the property.
+     * @param type the type of the property value.
+     * @param readOnly whether the property is read-only or writable.
+     */
     public ApplicationProperty(T value, Class<T> type, boolean readOnly) {
         super(value, type, readOnly);
     }
 
+    /**
+     * Creates a new application property.
+     * 
+     * @param value the value of the property.
+     * @param type the type of the property value.
+     * @param readOnly whether the property is read-only or writable.
+     * @param enabled whether the property is enabled or disabled.
+     */
     public ApplicationProperty(T value, Class<T> type, boolean readOnly, boolean enabled) {
         super(value, type, readOnly);
         this.enabled = enabled;
@@ -104,26 +137,30 @@ public class ApplicationProperty<T> extends ObjectProperty<T>
     }
 
     /**
+     * Binds this property to the specified component.
      *
-     * @param component
+     * @see ComponentBinding
+     * @param component the component.
      */
     public void bind(Component component) {
         bind(component, new ComponentBinding<>(this, component));
     }
 
     /**
+     * Binds this property to the specified field.
      * 
-     * @param field
+     * @see FieldBinding
+     * @param field the field.
      */
     public void bind(AbstractField<T> field) {
         bind(field, new FieldBinding<>(this, field));
     }
 
     /**
+     * Binds this property to the specified {@code view} using the specified {@code binding}.
      *
-     * @param view
-     * @param binding
-     * @param <VIEW>
+     * @param view the view (UI component).
+     * @param binding the binding to use.
      */
     protected final <VIEW> void bind(VIEW view, Binding<ApplicationProperty, VIEW> binding) {
         Objects.requireNonNull(view, "view must not be null");
@@ -135,39 +172,40 @@ public class ApplicationProperty<T> extends ObjectProperty<T>
     }
 
     /**
+     * Unbinds this property from the specified view (UI component).
      *
-     * @param view
+     * @param view the view.
      */
     public final void unbind(Object view) {
         bindings.unbind(view);
     }
 
     @Override
-    public void addValidator(Validator validator) {
+    public final void addValidator(Validator validator) {
         if (validator != null) {
             validators.add(validator);
         }
     }
 
     @Override
-    public void removeValidator(Validator validator) {
+    public final void removeValidator(Validator validator) {
         if (validator != null) {
             validators.remove(validator);
         }
     }
 
     @Override
-    public void removeAllValidators() {
+    public final void removeAllValidators() {
         validators.clear();
     }
 
     @Override
-    public Collection<Validator> getValidators() {
+    public final Collection<Validator> getValidators() {
         return Collections.unmodifiableCollection(validators);
     }
 
     @Override
-    public boolean isValid() {
+    public final boolean isValid() {
         try {
             validate();
             return true;
@@ -177,18 +215,18 @@ public class ApplicationProperty<T> extends ObjectProperty<T>
     }
 
     @Override
-    public void validate() throws Validator.InvalidValueException {
+    public final void validate() throws Validator.InvalidValueException {
         Object value = getValue();
         validators.forEach(v -> v.validate(value));
     }
 
     @Override
-    public boolean isInvalidAllowed() {
+    public final boolean isInvalidAllowed() {
         return invalidAllowed;
     }
 
     @Override
-    public void setInvalidAllowed(boolean invalidValueAllowed) throws UnsupportedOperationException {
+    public final void setInvalidAllowed(boolean invalidValueAllowed) throws UnsupportedOperationException {
         this.invalidAllowed = invalidValueAllowed;
     }
 }

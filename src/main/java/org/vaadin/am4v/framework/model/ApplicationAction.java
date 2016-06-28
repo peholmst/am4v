@@ -16,7 +16,14 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.MenuBar;
 
 /**
+ * An application action is an operation that a user of the application can perform. An action can be enabled or
+ * disabled, shown or hidden and bound to a UI component. For example, the same action can be bound to both a menu item
+ * and a button. Both will execute the action and both will follow the state of the action (enabled, hidden, etc).
+ * <p>
+ * Typically the actions will be defined in an {@link ApplicationModel}.
  * 
+ * @see ContextualApplicationAction
+ * @see ApplicationProperty
  */
 public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNotifier, Runnable {
 
@@ -28,7 +35,7 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
     private final ActionWorker worker;
 
     /**
-     * 
+     * Default constructor for the action. You will have to override {@link #run()} if you use this constructor.
      */
     protected ApplicationAction() {
         worker = (action) -> {
@@ -37,15 +44,18 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
     }
 
     /**
+     * Constructor that takes a worker that actually implements the action. This is to make it possible to use
+     * lambdas without having to override anything.
      * 
-     * @param worker
+     * @param worker the worker that implements the action.
      */
     public ApplicationAction(ActionWorker worker) {
         this.worker = Objects.requireNonNull(worker, "worker must not be null");
     }
 
     /**
-     *
+     * Performs the action. If an {@link ActionWorker} has been set, it will be executed. Otherwise, this method
+     * will throw an exception and will need to be overridden.
      */
     @Override
     public void run() {
@@ -107,34 +117,40 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
     }
 
     /**
-     *
-     * @param menuItem
+     * Binds this action to the specified menu item.
+     * 
+     * @see MenuItemBinding
+     * @param menuItem the menu item.
      */
     public void bind(MenuBar.MenuItem menuItem) {
         bind(menuItem, new MenuItemBinding<>(this, menuItem));
     }
 
     /**
-     *
-     * @param button
+     * Bins this action to the specified button.
+     * 
+     * @see ButtonBinding
+     * @param button the button.
      */
     public void bind(Button button) {
         bind(button, new ButtonBinding<>(this, button));
     }
 
     /**
-     * 
-     * @param component
+     * Binds this action to the specified component.
+     *
+     * @see ComponentBinding
+     * @param component the component.
      */
     public void bind(Component component) {
         bind(component, new ComponentBinding<>(this, component));
     }
 
     /**
-     *
-     * @param view
-     * @param binding
-     * @param <VIEW>
+     * Binds this action to the specified {@code view} using the specified {@code binding}.
+     * 
+     * @param view the view (UI component).
+     * @param binding the binding to use.
      */
     protected final <VIEW> void bind(VIEW view, Binding<ApplicationAction, VIEW> binding) {
         Objects.requireNonNull(view, "view must not be null");
@@ -146,18 +162,27 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
     }
 
     /**
+     * Unbinds this action from the specified view (UI component).
      * 
-     * @param view
+     * @param view the view.
      */
     public final void unbind(Object view) {
         bindings.unbind(view);
     }
 
     /**
-     * 
+     * Functional interface for an action worker that makes it possible to implement {@link ApplicationAction}s using
+     * lambdas.
+     *
+     * @see ApplicationAction#ApplicationAction(ActionWorker)
      */
     @FunctionalInterface
     public interface ActionWorker extends Serializable {
+        /**
+         * Executes the action.
+         * 
+         * @param action the action that is being executed (i.e. the owner of this worker).
+         */
         void execute(ApplicationAction action);
     }
 }
