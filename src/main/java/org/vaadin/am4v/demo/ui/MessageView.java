@@ -1,18 +1,15 @@
-package org.vaadin.am4v.demo.withframework;
+package org.vaadin.am4v.demo.ui;
 
-import com.vaadin.data.Property;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 
 public class MessageView extends VerticalLayout implements MessageModel.Observer<MessageModel> {
 
-    private MessageModel applicationModel;
     private TextField from;
     private TextField to;
     private TextField cc;
     private TextField subject;
     private TextArea body;
-    private Label noMessageSelected;
     private FormLayout headers;
     private HorizontalLayout buttons;
     private Button reply;
@@ -26,7 +23,6 @@ public class MessageView extends VerticalLayout implements MessageModel.Observer
 
         headers = new FormLayout();
         headers.setWidth("100%");
-        headers.setVisible(false);
         headers.setMargin(false);
         addComponent(headers);
 
@@ -60,20 +56,8 @@ public class MessageView extends VerticalLayout implements MessageModel.Observer
 
         body = new TextArea();
         body.setSizeFull();
-        body.setVisible(false);
         addComponent(body);
         setExpandRatio(body, 1.0f);
-
-        noMessageSelected = new Label("No message selected");
-        addComponent(noMessageSelected);
-    }
-
-    private void onMessageSelected(Property.ValueChangeEvent event) {
-        boolean messageSelected = event.getProperty().getValue() != null;
-        headers.setVisible(messageSelected);
-        body.setVisible(messageSelected);
-        buttons.setVisible(messageSelected);
-        noMessageSelected.setVisible(!messageSelected);
     }
 
     @Override
@@ -84,15 +68,11 @@ public class MessageView extends VerticalLayout implements MessageModel.Observer
             applicationModel.cc.bind(cc);
             applicationModel.subject.bind(subject);
             applicationModel.body.bind(body);
-            applicationModel.message.addValueChangeListener(this::onMessageSelected);
             applicationModel.reply.bind(reply);
             applicationModel.forward.bind(forward);
             applicationModel.delete.bind(delete);
             applicationModel.move.bind(move);
         } else {
-            if (this.applicationModel != null) {
-                this.applicationModel.message.removeValueChangeListener(this::onMessageSelected);
-            }
             applicationModel.sender.unbind(from);
             applicationModel.recipient.unbind(to);
             applicationModel.cc.unbind(cc);
@@ -103,6 +83,5 @@ public class MessageView extends VerticalLayout implements MessageModel.Observer
             applicationModel.delete.unbind(delete);
             applicationModel.move.unbind(move);
         }
-        this.applicationModel = applicationModel;
     }
 }

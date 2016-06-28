@@ -1,4 +1,4 @@
-package org.vaadin.am4v.demo.withframework;
+package org.vaadin.am4v.demo.ui;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -13,7 +13,8 @@ import com.vaadin.ui.themes.ValoTheme;
 public class MainUI extends UI {
 
     private final MainModel mainModel = new MainModel();
-    private final FolderTreeModel folderTreeModel = new FolderTreeModel(mainModel);
+    private final AddFolderModel addFolderModel = new AddFolderModel(mainModel);
+    private final FolderTreeModel folderTreeModel = new FolderTreeModel(mainModel, addFolderModel);
     private final MessageListModel messageListModel = new MessageListModel(folderTreeModel);
     private final MessageModel messageModel = new MessageModel(messageListModel);
 
@@ -45,6 +46,8 @@ public class MainUI extends UI {
         final VerticalLayout noMessageSelectedView = new VerticalLayout(new Label("No message selected"));
         noMessageSelectedView.setMargin(true);
         messagePanel.setSecondComponent(noMessageSelectedView);
+
+        new AddFolderView(addFolderModel);
 
         messageListModel.selected.addValueChangeListener(evt -> {
             if (evt.getProperty().getValue() == null) {

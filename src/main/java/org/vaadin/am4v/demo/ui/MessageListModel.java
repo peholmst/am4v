@@ -1,4 +1,4 @@
-package org.vaadin.am4v.demo.withframework;
+package org.vaadin.am4v.demo.ui;
 
 import java.time.ZonedDateTime;
 

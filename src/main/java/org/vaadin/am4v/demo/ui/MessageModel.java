@@ -1,6 +1,5 @@
-package org.vaadin.am4v.demo.withframework;
+package org.vaadin.am4v.demo.ui;
 
-import com.vaadin.data.util.ObjectProperty;
 import org.vaadin.am4v.demo.domain.Message;
 import org.vaadin.am4v.framework.model.ApplicationAction;
 import org.vaadin.am4v.framework.model.ApplicationModel;

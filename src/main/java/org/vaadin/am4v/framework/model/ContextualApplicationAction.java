@@ -14,20 +14,22 @@ public class ContextualApplicationAction<C> extends ApplicationAction {
      *
      */
     public ContextualApplicationAction() {
-        worker = null;
+        worker = (action, context) -> {
+            throw new IllegalStateException("Please override the run() method");
+        };
     }
 
     /**
      *
      * @param worker
      */
-    public ContextualApplicationAction(ContextualActionWorker worker) {
+    public ContextualApplicationAction(ContextualActionWorker<C> worker) {
         this.worker = Objects.requireNonNull(worker, "worker must not be null");
     }
 
     @Override
-    public void run() {
-        worker.execute(this, null);
+    public final void run() {
+        run(null);
     }
 
     /**

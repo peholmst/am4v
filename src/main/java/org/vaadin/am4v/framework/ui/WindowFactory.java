@@ -1,39 +1,40 @@
-package org.vaadin.am4v.framework;
-
-import java.io.Serializable;
+package org.vaadin.am4v.framework.ui;
 
 import com.vaadin.data.Property;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
+import org.vaadin.am4v.framework.model.ApplicationModel;
+import org.vaadin.am4v.framework.model.WindowApplicationModel;
 
-public abstract class WindowFactory<M extends WindowApplicationModel> implements Serializable {
+public abstract class WindowFactory<M extends WindowApplicationModel> implements ApplicationModel.Observer<M> {
 
-    private M windowApplicationModel;
+    private M applicationModel;
     private Window visibleWindow;
 
     public WindowFactory() {
     }
 
-    public WindowFactory(M windowApplicationModel) {
-        this.windowApplicationModel = windowApplicationModel;
+    public WindowFactory(M applicationModel) {
+        setApplicationModel(applicationModel);
     }
 
-    public final void setWindowApplicationModel(M windowApplicationModel) {
-        if (this.windowApplicationModel != null) {
-            this.windowApplicationModel.windowVisible().removeValueChangeListener(this::onWindowVisibilityChanged);
+    @Override
+    public final void setApplicationModel(M applicationModel) {
+        if (this.applicationModel != null) {
+            this.applicationModel.windowVisible().removeValueChangeListener(this::onWindowVisibilityChanged);
         }
-        this.windowApplicationModel = windowApplicationModel;
-        if (this.windowApplicationModel != null) {
-            this.windowApplicationModel.windowVisible().addValueChangeListener(this::onWindowVisibilityChanged);
+        this.applicationModel = applicationModel;
+        if (this.applicationModel != null) {
+            this.applicationModel.windowVisible().addValueChangeListener(this::onWindowVisibilityChanged);
         }
     }
 
-    public final M getWindowApplicationModel() {
-        return windowApplicationModel;
+    public final M getApplicationModel() {
+        return applicationModel;
     }
 
     private void onWindowVisibilityChanged(Property.ValueChangeEvent event) {
-        if (windowApplicationModel.windowVisible().getValue()) {
+        if (applicationModel.windowVisible().getValue()) {
             showWindow();
         } else {
             hideWindow();

@@ -1,4 +1,4 @@
-package org.vaadin.am4v.demo.withframework;
+package org.vaadin.am4v.demo.ui;
 
 import com.vaadin.ui.Notification;
 import org.vaadin.am4v.demo.domain.Folder;
@@ -15,6 +15,7 @@ import com.vaadin.data.util.HierarchicalContainer;
 public class FolderTreeModel extends ApplicationModel {
 
     private boolean initialized = false;
+    private AddFolderModel addFolderModel;
 
     public final Container.Hierarchical tree = new HierarchicalContainer() {
         {
@@ -68,11 +69,18 @@ public class FolderTreeModel extends ApplicationModel {
     };
 
     public final ContextualApplicationAction<Folder> addFolder = new ContextualApplicationAction<>((action, parent) -> {
-
+        if (parent == null) {
+            parent = selected.getValue();
+        }
+        if (addFolderModel != null) {
+            addFolderModel.show(parent);
+        }
     });
 
-    public FolderTreeModel(MainModel parent) {
+    public FolderTreeModel(MainModel parent, AddFolderModel addFolderModel) {
         super(parent);
+        this.addFolderModel = addFolderModel;
+        registerMessageHandler(FolderAdded.class, (source, msg) -> refresh.run());
         selected.addValueChangeListener(evt -> {
             addFolder.setEnabled(selected.getValue() != null);
             removeFolder.setEnabled(selected.getValue() != null && selected.getValue().isUserCreated());

@@ -1,7 +1,9 @@
 package org.vaadin.am4v.framework.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -12,6 +14,7 @@ public abstract class ApplicationModel implements Serializable {
     private NavigatorStrategy navigatorStrategy;
     private PushStrategy pushStrategy;
     private NotificationStrategy notificationStrategy;
+    private final Set<MessageHandlerRegistration> messageHandlers = new HashSet<>();
 
     /**
      * 
@@ -44,6 +47,39 @@ public abstract class ApplicationModel implements Serializable {
             setNavigatorStrategy(NavigatorStrategy.getDefault());
             setPushStrategy(PushStrategy.getDefault());
             setNotificationStrategy(NotificationStrategy.getDefault());
+        } else {
+            parent.registerMessageHandler(Object.class, this::onParentMessage);
+        }
+    }
+
+    /**
+     *
+     * @param messageClass
+     * @param messageHandler
+     * @param <M>
+     */
+    protected final <M> void registerMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
+        messageHandlers.add(new MessageHandlerRegistration(messageClass, messageHandler));
+    }
+
+    /**
+     *
+     * @param message
+     */
+    protected final void broadcastMessage(Object message) {
+        forwardMessage(ApplicationModel.this, message);
+    }
+
+    private void forwardMessage(ApplicationModel source, Object message) {
+        messageHandlers.stream().filter(h -> h.supports(message)).forEach(h -> h.handleMessage(source, message));
+        if (parent != null) {
+            parent.forwardMessage(source, message);
+        }
+    }
+
+    private void onParentMessage(ApplicationModel source, Object message) {
+        if (source != this) {
+            messageHandlers.stream().filter(h -> h.supports(message)).forEach(h -> h.handleMessage(source, message));
         }
     }
 
@@ -121,7 +157,7 @@ public abstract class ApplicationModel implements Serializable {
      * 
      * @return
      */
-    protected Optional<ApplicationModel> getParent() {
+    protected final Optional<ApplicationModel> getParent() {
         return Optional.ofNullable(parent);
     }
 
@@ -129,5 +165,30 @@ public abstract class ApplicationModel implements Serializable {
     public interface Observer<M extends ApplicationModel> extends Serializable {
 
         void setApplicationModel(M applicationModel);
+    }
+
+    @FunctionalInterface
+    public interface MessageHandler<M> extends Serializable {
+
+        void onMessage(ApplicationModel source, M message);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static class MessageHandlerRegistration implements Serializable {
+        private final Class messageClass;
+        private final MessageHandler messageHandler;
+
+        public MessageHandlerRegistration(Class<?> messageClass, MessageHandler<?> messageHandler) {
+            this.messageClass = messageClass;
+            this.messageHandler = messageHandler;
+        }
+
+        public boolean supports(Object message) {
+            return this.messageClass.isInstance(message);
+        }
+
+        public void handleMessage(ApplicationModel source, Object message) {
+            this.messageHandler.onMessage(source, message);
+        }
     }
 }

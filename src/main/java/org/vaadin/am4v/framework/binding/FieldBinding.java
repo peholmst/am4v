@@ -3,7 +3,7 @@ package org.vaadin.am4v.framework.binding;
 import java.io.Serializable;
 
 import com.vaadin.data.Property;
-import com.vaadin.data.Validatable;
+import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.ui.AbstractField;
 
 /**
@@ -23,12 +23,13 @@ public class FieldBinding<MODEL extends Serializable> extends ComponentBinding<M
     public void bind() {
         super.bind();
         getModelAs(Property.class).ifPresent(getView()::setPropertyDataSource);
-        getModelAs(Validatable.class).ifPresent(m -> m.getValidators().forEach(getView()::addValidator));
+        getView().setInvalidCommitted(true);
+        getView().setBuffered(false);
+        getView().setValidationVisible(true);
     }
 
     @Override
     public void unbind() {
-        getModelAs(Validatable.class).ifPresent(m -> m.getValidators().forEach(getView()::removeValidator));
         getView().setPropertyDataSource(null);
         super.unbind();
     }
