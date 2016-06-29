@@ -211,10 +211,22 @@ public abstract class ApplicationModel implements Serializable {
      * 
      * @see #detachFromParent()
      * @see #ApplicationModel(ApplicationModel)
-     * @return the parent.
+     * @see #getParentAs(Class)
+     * @return the parent model.
      */
     protected final Optional<ApplicationModel> getParent() {
         return Optional.ofNullable(parent);
+    }
+
+    /**
+     * Returns the parent of this model if it has one, cast to the specified class if that cast is possible.
+     *
+     * @see #getParent()
+     * @param clazz the clazz to which the parent model should be cast.
+     * @return the parent model.
+     */
+    protected final <M extends ApplicationModel> Optional<M> getParentAs(Class<M> clazz) {
+        return getParent().filter(clazz::isInstance).map(clazz::cast);
     }
 
     /**

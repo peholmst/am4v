@@ -12,10 +12,21 @@ import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
 
+/**
+ * This application model contains the messages of the currently selected folder. It is a child of the
+ * {@ﬁink FolderTreeModel} and also reacts whenever the currently selected folder is changed.
+ */
 public class MessageListModel extends ApplicationModel {
 
+    /**
+     * Property containing the currently selected message.
+     */
     public final ApplicationProperty<Message> selected = new ApplicationProperty<Message>(null, Message.class);
 
+    /**
+     * Container containing the messages in the currently selected folder.
+     * See {@link FolderTreeModel#tree} for an explanation why it is a bad idea to expose this as a container directly.
+     */
     public final Container messages = new IndexedContainer() {
         {
             addContainerProperty("Subject", String.class, "");

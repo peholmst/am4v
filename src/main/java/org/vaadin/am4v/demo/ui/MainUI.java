@@ -9,6 +9,11 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 
+/**
+ * The main UI of the demo application. The entire UI could have been built without any models at all. This means that
+ * Vaadin Designer could have been used, or that the UI could have been built first and the models added afterwards as
+ * needed.
+ */
 @Theme(value = ValoTheme.THEME_NAME)
 public class MainUI extends UI {
 
@@ -49,6 +54,8 @@ public class MainUI extends UI {
 
         new AddFolderView(addFolderModel);
 
+        // The main view is responsible for showing or hiding the views. This makes the view implementations
+        // simpler.
         messageListModel.selected.addValueChangeListener(evt -> {
             if (evt.getProperty().getValue() == null) {
                 messagePanel.setSecondComponent(noMessageSelectedView);

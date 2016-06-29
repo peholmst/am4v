@@ -5,27 +5,57 @@ import org.vaadin.am4v.framework.model.ApplicationAction;
 import org.vaadin.am4v.framework.model.ApplicationModel;
 import org.vaadin.am4v.framework.model.ApplicationProperty;
 
+/**
+ * This application model contains the currently selected message. It is a direct child of {@link MessageListModel} and
+ * reacts whenever the currently selected message is changed.
+ */
 public class MessageModel extends ApplicationModel {
 
+    /**
+     * Property containing the subject of the current message.
+     */
     public final ApplicationProperty<String> subject = new ApplicationProperty<>(null, String.class, true);
+    /**
+     * Property containing the sender of the current message.
+     */
     public final ApplicationProperty<String> sender = new ApplicationProperty<>(null, String.class, true);
+    /**
+     * Property containing the recipient(s) of the current message.
+     */
     public final ApplicationProperty<String> recipient = new ApplicationProperty<>(null, String.class, true);
+    /**
+     * Property containing the CC of the current message.
+     */
     public final ApplicationProperty<String> cc = new ApplicationProperty<>(null, String.class, true);
+    /**
+     * Property containing the body of the current message.
+     */
     public final ApplicationProperty<String> body = new ApplicationProperty<>(null, String.class, true);
-    public final ApplicationProperty<Message> message = new ApplicationProperty<>(null, Message.class, true);
 
+    /**
+     * Action for replying to the message.
+     */
     public final ApplicationAction reply = new ApplicationAction(action -> {
         getNotificationStrategy().showNotification("Reply invoked");
     });
 
+    /**
+     * Action for forwarding the message.
+     */
     public final ApplicationAction forward = new ApplicationAction(action -> {
         getNotificationStrategy().showNotification("Forward invoked");
     });
 
+    /**
+     * Action for deleting the message.
+     */
     public final ApplicationAction delete = new ApplicationAction(action -> {
         getNotificationStrategy().showNotification("Delete invoked");
     });
 
+    /**
+     * Action for moving the message to another folder.
+     */
     public final ApplicationAction move = new ApplicationAction(action -> {
         getNotificationStrategy().showNotification("Move invoked");
     });
@@ -37,7 +67,6 @@ public class MessageModel extends ApplicationModel {
     }
 
     private void messageSelected(Message message) {
-        setValue(this.message, message);
         if (message != null) {
             setValue(subject, message.getSubject());
             setValue(sender, message.getFrom());
