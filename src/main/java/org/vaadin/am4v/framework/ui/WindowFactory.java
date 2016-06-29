@@ -1,19 +1,33 @@
 package org.vaadin.am4v.framework.ui;
 
-import com.vaadin.data.Property;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
 import org.vaadin.am4v.framework.model.ApplicationModel;
 import org.vaadin.am4v.framework.model.WindowApplicationModel;
 
+import com.vaadin.data.Property;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.Window;
+
+/**
+ * <b>Experimental</b> base class for UIs that observe {@link WindowApplicationModel}s and actually show and hide the
+ * window.
+ */
 public abstract class WindowFactory<M extends WindowApplicationModel> implements ApplicationModel.Observer<M> {
 
     private M applicationModel;
     private Window visibleWindow;
 
+    /**
+     * Creates a new window factory without a model. The model must be explicitly assigned using
+     * {@link #setApplicationModel(WindowApplicationModel)}.
+     */
     public WindowFactory() {
     }
 
+    /**
+     * Creates a new window factory with the specified model.
+     * 
+     * @param applicationModel the application model to use.
+     */
     public WindowFactory(M applicationModel) {
         setApplicationModel(applicationModel);
     }
@@ -29,6 +43,11 @@ public abstract class WindowFactory<M extends WindowApplicationModel> implements
         }
     }
 
+    /**
+     * Returns the application model currently being observed.
+     * 
+     * @return the application model, may be {@code null}.
+     */
     public final M getApplicationModel() {
         return applicationModel;
     }
@@ -61,5 +80,11 @@ public abstract class WindowFactory<M extends WindowApplicationModel> implements
         hideWindow();
     }
 
+    /**
+     * Creates the window that will be shown. The window factory will take care of actually showing the window
+     * when it is time.
+     * 
+     * @return a new window to show.
+     */
     protected abstract Window createWindow();
 }

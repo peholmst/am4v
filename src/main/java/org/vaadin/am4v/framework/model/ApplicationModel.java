@@ -2,11 +2,25 @@ package org.vaadin.am4v.framework.model;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 /**
- *
+ * Base class for application models. An application model is an abstraction of a part of the UI. The model exposes
+ * {@link ApplicationAction actions} and {@link ApplicationProperty properties} that can be bound to UI elements. The
+ * model can also expose other methods that the UI can invoke.
+ * <p>
+ * Application models can be grouped into hierarchies where the children inherit certain properties from their parent.
+ * There is also a simple messaging mechanism where any model in the hierarchy can {@link #broadcastMessage(Object)}
+ * broadcast messages} to all the other models. If a model is interested in a particular message, it can
+ * {@link #registerMessageHandler(Class, MessageHandler)} register a message handler for it. This makes it possible for
+ * models to communicate with each other in a decoupled way. It is also valid for application models to invoke each
+ * other directly when/if that feels simpler than using message passing.
+ * <p>
+ * The model contains strategies for invoking different Vaadin services such as {@link PushStrategy server push}. By
+ * using the strategy pattern, alternative implementations can be plugged in during testing. If a model hierarchy is
+ * used, the strategies need only be added to the top-most model, from which the other models will inherit them.
  */
 public abstract class ApplicationModel implements Serializable {
 
@@ -17,10 +31,14 @@ public abstract class ApplicationModel implements Serializable {
     private final Set<MessageHandlerRegistration> messageHandlers = new HashSet<>();
 
     /**
+     * Creates a new root model (no parent) with the specified strategies.
      * 
-     * @param navigatorStrategy
-     * @param pushStrategy
-     * @param notificationStrategy
+     * @param navigatorStrategy the navigator strategy to use, or {@code null} to use the
+     *        {@link NavigatorStrategy#getDefault() default}.
+     * @param pushStrategy the push strategy to use, or {@code null} to use the {@link PushStrategy#getDefault()
+     *        default}.
+     * @param notificationStrategy the notification strategy to use, or {@code null} to use the
+     *        {@link NotificationStrategy#getDefault() default}.
      */
     public ApplicationModel(NavigatorStrategy navigatorStrategy, PushStrategy pushStrategy,
         NotificationStrategy notificationStrategy) {
@@ -31,42 +49,61 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
+     * Creates a new root model (no parent) with the default strategies.
      *
+     * @see NavigatorStrategy#getDefault()
+     * @see PushStrategy#getDefault()
+     * @see NotificationStrategy#getDefault()
      */
     public ApplicationModel() {
         this(NavigatorStrategy.getDefault(), PushStrategy.getDefault(), NotificationStrategy.getDefault());
     }
 
     /**
+     * Creates a new child model with the specified parent. The strategies are inherited from the parent.
      *
-     * @param parent
+     * @see #detachFromParent()
+     * @param parent the parent model.
      */
     public ApplicationModel(ApplicationModel parent) {
-        this.parent = parent;
-        if (parent == null) {
-            setNavigatorStrategy(NavigatorStrategy.getDefault());
-            setPushStrategy(PushStrategy.getDefault());
-            setNotificationStrategy(NotificationStrategy.getDefault());
-        } else {
-            parent.registerMessageHandler(Object.class, this::onParentMessage);
-        }
+        this.parent = Objects.requireNonNull(parent);
+        parent.registerMessageHandler(Object.class, this::onParentMessage);
     }
 
     /**
+     * Registers a new message handler. The handler will receive all messages of the specified message class, regardless
+     * of where in the model hierarchy they have been broadcast.
      *
-     * @param messageClass
-     * @param messageHandler
-     * @param <M>
+     * @see #broadcastMessage(Object)
+     * @param messageClass the class of the messages to receive.
+     * @param messageHandler the message handler.
      */
     protected final <M> void registerMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
+        Objects.requireNonNull(messageClass);
+        Objects.requireNonNull(messageHandler);
         messageHandlers.add(new MessageHandlerRegistration(messageClass, messageHandler));
     }
 
     /**
+     * Unregisters a message handler previously registered using {@link #registerMessageHandler(Class, MessageHandler)}.
+     * 
+     * @param messageClass the class of the messages to receive.
+     * @param messageHandler the message handler.
+     */
+    protected final <M> void unregisterMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
+        Objects.requireNonNull(messageClass);
+        Objects.requireNonNull(messageHandler);
+        messageHandlers.remove(new MessageHandlerRegistration(messageClass, messageHandler));
+    }
+
+    /**
+     * Broadcasts the given message to all models in the model hierarchy, including this model.
      *
-     * @param message
+     * @see #registerMessageHandler(Class, MessageHandler)
+     * @param message the message to broadcast.
      */
     protected final void broadcastMessage(Object message) {
+        Objects.requireNonNull(message);
         forwardMessage(ApplicationModel.this, message);
     }
 
@@ -84,8 +121,10 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Returns the {@link NavigatorStrategy} to use. If this model has a parent and no strategy has been explicitly
+     * set, the strategy of the parent is returned.
+     * 
+     * @return the navigator strategy (never {@code null}).
      */
     public final NavigatorStrategy getNavigatorStrategy() {
         if (navigatorStrategy == null && parent != null) {
@@ -95,8 +134,11 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
+     * Sets the navigator strategy to use.
      *
-     * @param navigatorStrategy
+     * @see #getNavigatorStrategy()
+     * @param navigatorStrategy the navigator strategy or {@code null} to use the {@link NavigatorStrategy#getDefault()
+     *        default} or inherit from the parent model.
      */
     public final void setNavigatorStrategy(NavigatorStrategy navigatorStrategy) {
         if (parent != null) {
@@ -107,8 +149,10 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Returns the {@link PushStrategy} to use. If this model has a parent and no strategy has been explicitly set,
+     * the strategy of the parent is returned.
+     * 
+     * @return the push strategy (never {@code null}).
      */
     public final PushStrategy getPushStrategy() {
         if (pushStrategy == null && parent != null) {
@@ -118,8 +162,11 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
-     *
-     * @param pushStrategy
+     * Sets the push strategy to use.
+     * 
+     * @see #getPushStrategy()
+     * @param pushStrategy the push strategy or {@code null} to use the {@link PushStrategy#getDefault() default} or
+     *        inherit from the parent model.
      */
     public final void setPushStrategy(PushStrategy pushStrategy) {
         if (parent != null) {
@@ -130,8 +177,11 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
+     * Returns the {@link NotificationStrategy} to use. If this model has a parent and no strategy has been explicitly
+     * set,
+     * the strategy of the parent is returned.
      *
-     * @return
+     * @return the notification strategy (never {@code null}).
      */
     public final NotificationStrategy getNotificationStrategy() {
         if (notificationStrategy == null && parent != null) {
@@ -141,8 +191,11 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
-     *
-     * @param notificationStrategy
+     * Sets the notification strategy to use.
+     * 
+     * @see #getNotificationStrategy()
+     * @param notificationStrategy the notification strategy or {@code null} to use the
+     *        {@link NotificationStrategy#getDefault() default} or inherit from the parent model.
      */
     public final void setNotificationStrategy(NotificationStrategy notificationStrategy) {
         if (parent != null) {
@@ -154,22 +207,80 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
+     * Returns the parent of this model if it has one.
      * 
-     * @return
+     * @see #detachFromParent()
+     * @see #ApplicationModel(ApplicationModel)
+     * @return the parent.
      */
     protected final Optional<ApplicationModel> getParent() {
         return Optional.ofNullable(parent);
     }
 
+    /**
+     * Detaches this model from its parent, turning it into a root model. Any services inherited from the parent
+     * will be replaced with their defaults. Once a model has been detached, it cannot be re-attached to a parent. This
+     * is mainly useful for models that do not share the same scope as the parent model (i.e. they can be garbage
+     * collected at different times).
+     * <p>
+     * Subclasses that wish to perform additional clean up when the model is detached should override {@link #detach()}.
+     *
+     * @see #ApplicationModel(ApplicationModel)
+     * @see #getParent()
+     */
+    public final void detachFromParent() {
+        if (parent != null) {
+            parent.unregisterMessageHandler(Object.class, this::onParentMessage);
+            if (notificationStrategy == null) {
+                notificationStrategy = NotificationStrategy.getDefault();
+            }
+            if (pushStrategy == null) {
+                pushStrategy = PushStrategy.getDefault();
+            }
+            if (navigatorStrategy == null) {
+                navigatorStrategy = NavigatorStrategy.getDefault();
+            }
+            detach();
+            parent = null;
+        }
+    }
+
+    /**
+     * Called when the model is being detached from the parent model. At this point, the parent model is still
+     * accessible by {@link #getParent()}. The default implementation does nothing, subclasses may override.
+     */
+    protected void detach() {
+    }
+
+    /**
+     * Interface that can (optionally) be implemented by classes that observe a single application model.
+     */
     @FunctionalInterface
     public interface Observer<M extends ApplicationModel> extends Serializable {
 
+        /**
+         * Sets the application model to observe.
+         * 
+         * @param applicationModel the application model, may be {@code null}.
+         */
         void setApplicationModel(M applicationModel);
     }
 
+    /**
+     * Interface for message handlers.
+     * 
+     * @see #registerMessageHandler(Class, MessageHandler)
+     * @see #broadcastMessage(Object)
+     */
     @FunctionalInterface
-    public interface MessageHandler<M> extends Serializable {
+    protected interface MessageHandler<M> extends Serializable {
 
+        /**
+         * Called when a message has been received.
+         * 
+         * @param source the model that originally broadcast the message.
+         * @param message the message.
+         */
         void onMessage(ApplicationModel source, M message);
     }
 
@@ -178,17 +289,39 @@ public abstract class ApplicationModel implements Serializable {
         private final Class messageClass;
         private final MessageHandler messageHandler;
 
-        public MessageHandlerRegistration(Class<?> messageClass, MessageHandler<?> messageHandler) {
+        MessageHandlerRegistration(Class<?> messageClass, MessageHandler<?> messageHandler) {
             this.messageClass = messageClass;
             this.messageHandler = messageHandler;
         }
 
-        public boolean supports(Object message) {
+        boolean supports(Object message) {
             return this.messageClass.isInstance(message);
         }
 
-        public void handleMessage(ApplicationModel source, Object message) {
+        void handleMessage(ApplicationModel source, Object message) {
             this.messageHandler.onMessage(source, message);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            MessageHandlerRegistration that = (MessageHandlerRegistration) o;
+
+            if (!messageClass.equals(that.messageClass))
+                return false;
+            return messageHandler.equals(that.messageHandler);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = messageClass.hashCode();
+            result = 31 * result + messageHandler.hashCode();
+            return result;
         }
     }
 }
