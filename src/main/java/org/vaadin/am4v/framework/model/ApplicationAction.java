@@ -123,7 +123,7 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
      * @param menuItem the menu item.
      */
     public void bind(MenuBar.MenuItem menuItem) {
-        bind(menuItem, new MenuItemBinding<>(this, menuItem));
+        bind(new MenuItemBinding<>(this, menuItem));
     }
 
     /**
@@ -133,7 +133,7 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
      * @param button the button.
      */
     public void bind(Button button) {
-        bind(button, new ButtonBinding<>(this, button));
+        bind(new ButtonBinding<>(this, button));
     }
 
     /**
@@ -143,22 +143,20 @@ public class ApplicationAction implements EnabledChangeNotifier, VisibleChangeNo
      * @param component the component.
      */
     public void bind(Component component) {
-        bind(component, new ComponentBinding<>(this, component));
+        bind(new ComponentBinding<>(this, component));
     }
 
     /**
-     * Binds this action to the specified {@code view} using the specified {@code binding}.
+     * Registers the specified {@code binding} with this action.
      * 
-     * @param view the view (UI component).
      * @param binding the binding to use.
      */
-    protected final <VIEW> void bind(VIEW view, Binding<ApplicationAction, VIEW> binding) {
-        Objects.requireNonNull(view, "view must not be null");
+    protected final <VIEW> void bind(Binding<ApplicationAction, VIEW> binding) {
         Objects.requireNonNull(binding, "binding must not be null");
         if (binding.getModel() != this) {
             throw new IllegalArgumentException("Binding must be bound to this ApplicationAction");
         }
-        bindings.bind(view, binding);
+        bindings.bind(binding);
     }
 
     /**

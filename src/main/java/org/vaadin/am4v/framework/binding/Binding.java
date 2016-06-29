@@ -55,7 +55,7 @@ public abstract class Binding<MODEL, VIEW> implements Serializable {
     /**
      * Returns the view element of this binding.
      * 
-     * @return
+     * @return the view element.
      */
     public final VIEW getView() {
         return view;

@@ -143,7 +143,7 @@ public class ApplicationProperty<T> extends ObjectProperty<T>
      * @param component the component.
      */
     public void bind(Component component) {
-        bind(component, new ComponentBinding<>(this, component));
+        bind(new ComponentBinding<>(this, component));
     }
 
     /**
@@ -153,22 +153,20 @@ public class ApplicationProperty<T> extends ObjectProperty<T>
      * @param field the field.
      */
     public void bind(AbstractField<T> field) {
-        bind(field, new FieldBinding<>(this, field));
+        bind(new FieldBinding<>(this, field));
     }
 
     /**
-     * Binds this property to the specified {@code view} using the specified {@code binding}.
+     * Registers the specified binding with this property.
      *
-     * @param view the view (UI component).
      * @param binding the binding to use.
      */
-    protected final <VIEW> void bind(VIEW view, Binding<ApplicationProperty, VIEW> binding) {
-        Objects.requireNonNull(view, "view must not be null");
+    protected final <VIEW> void bind(Binding<ApplicationProperty, VIEW> binding) {
         Objects.requireNonNull(binding, "binding must not be null");
         if (binding.getModel() != this) {
             throw new IllegalArgumentException("Binding must be bound to this ApplicationProperty");
         }
-        bindings.bind(view, binding);
+        bindings.bind(binding);
     }
 
     /**
