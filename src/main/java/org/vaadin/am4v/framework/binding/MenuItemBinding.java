@@ -2,27 +2,33 @@ package org.vaadin.am4v.framework.binding;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.MenuBar;
 import org.vaadin.am4v.framework.EnabledChangeNotifier;
 import org.vaadin.am4v.framework.VisibleChangeNotifier;
 
+import com.vaadin.ui.MenuBar;
+
 /**
- *
+ * A binding that binds any model element to a {@link com.vaadin.ui.MenuBar.MenuItem}. If the model element implements
+ * {@link Runnable}, it will be invoked whenever the menu item is clicked. Changes to the visibility and enablement
+ * flags of the model element are reflected in the menu item but not the other way around.
  */
 public class MenuItemBinding<MODEL extends Serializable> extends Binding<MODEL, MenuBar.MenuItem> {
 
     /**
-     * 
-     * @param model
-     * @param menuItem
+     * Creates a new binding between the given model and view elements. Remember to also call {@link #bind()} to
+     * perform the actual binding.
+     *
+     * @param model the model element.
+     * @param menuItem the view element (i.e. the menu item).
      */
     public MenuItemBinding(MODEL model, MenuBar.MenuItem menuItem) {
         super(model, menuItem);
     }
 
     /**
-     * 
-     * @param menuItem
+     * Invokes the model element if it implements the {@link Runnable} interface.
+     *
+     * @param menuItem the menu item.
      */
     protected void onMenuItemSelected(MenuBar.MenuItem menuItem) {
         getModelAs(Runnable.class).ifPresent(Runnable::run);

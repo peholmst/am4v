@@ -13,7 +13,10 @@ import com.vaadin.event.Action;
 import com.vaadin.server.Resource;
 
 /**
- *
+ * A special binding that binds {@link ApplicationAction}s to {@link Action}s and also implements the
+ * {@link com.vaadin.event.Action.Handler} interface so that it can be directly plugged into tables, trees, etc.
+ * as a context menu. This binding works in a completely different way than {@link Binding} since context menus
+ * are handled in a completely different way than other components in Vaadin.
  */
 public class ActionHandlerBinding implements Action.Handler {
 
@@ -21,10 +24,12 @@ public class ActionHandlerBinding implements Action.Handler {
     private final Map<Action, ApplicationAction> actionToApplicationActionMap = new HashMap<>();
 
     /**
+     * Adds a new {@link Action} to this binding. The action will have to be explicitly bound to an
+     * {@link ApplicationAction} using {@link #bind(Action, ApplicationAction)}.
      * 
-     * @param caption
-     * @param icon
-     * @return
+     * @param caption the caption of the action.
+     * @param icon the icon of the action.
+     * @return the created action.
      */
     public Action add(String caption, Resource icon) {
         Action action = new Action(caption, icon);
@@ -33,17 +38,20 @@ public class ActionHandlerBinding implements Action.Handler {
     }
 
     /**
-     * 
-     * @param caption
-     * @return
+     * Adds a new {@link Action} to this binding. The action will have to be explicitly bound to an
+     * {@link ApplicationAction} using {@link #bind(Action, ApplicationAction)}.
+     *
+     * @param caption the caption of the action.
+     * @return the created action.
      */
     public Action add(String caption) {
         return add(caption, null);
     }
 
     /**
-     *
-     * @param action
+     * Removes the specified action from this binding. If the action did not exist in the first place, nothing happens.
+     * 
+     * @param action the action to remove.
      */
     public void remove(Action action) {
         actionList.remove(action);
@@ -51,9 +59,13 @@ public class ActionHandlerBinding implements Action.Handler {
     }
 
     /**
+     * Binds the specified {@code action} to the specified {@code applicationAction}.
      *
-     * @param action
-     * @param applicationAction
+     * @see #unbind(Action)
+     * 
+     * @param action the action.
+     * @param applicationAction the application action.
+     * @throws IllegalStateException if the action does not exist or has already been bound to an ApplicationAction.
      */
     public void bind(Action action, ApplicationAction applicationAction) {
         if (actionList.contains(action)) {
@@ -67,8 +79,10 @@ public class ActionHandlerBinding implements Action.Handler {
     }
 
     /**
+     * Unbinds the specified action from its application action. If the action has not been bound in the first place,
+     * nothing happens.
      *
-     * @param action
+     * @param action the action to unbind.
      */
     public void unbind(Action action) {
         actionToApplicationActionMap.remove(action);
