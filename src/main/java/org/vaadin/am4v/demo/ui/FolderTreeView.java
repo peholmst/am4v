@@ -20,6 +20,8 @@ public class FolderTreeView extends VerticalLayout implements FolderTreeModel.Ob
     private Button removeBtn;
     private Button addBtn;
 
+    private FolderTreeModel applicationModel;
+
     public FolderTreeView() {
         addBtn = new Button(FontAwesome.PLUS);
         removeBtn = new Button(FontAwesome.MINUS);
@@ -54,7 +56,7 @@ public class FolderTreeView extends VerticalLayout implements FolderTreeModel.Ob
             applicationModel.refresh.bind(refreshBtn);
             applicationModel.addFolder.bind(addBtn);
             applicationModel.removeFolder.bind(removeBtn);
-        } else {
+        } else if (this.applicationModel != null) {
             tree.setPropertyDataSource(null);
             tree.setContainerDataSource(null);
 
@@ -62,9 +64,10 @@ public class FolderTreeView extends VerticalLayout implements FolderTreeModel.Ob
             contextMenu.unbind(add);
             contextMenu.unbind(remove);
 
-            applicationModel.refresh.unbind(refreshBtn);
-            applicationModel.addFolder.unbind(addBtn);
-            applicationModel.removeFolder.unbind(removeBtn);
+            this.applicationModel.refresh.unbind(refreshBtn);
+            this.applicationModel.addFolder.unbind(addBtn);
+            this.applicationModel.removeFolder.unbind(removeBtn);
         }
+        this.applicationModel = applicationModel;
     }
 }

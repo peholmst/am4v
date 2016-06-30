@@ -17,6 +17,8 @@ public class MessageView extends VerticalLayout implements MessageModel.Observer
     private Button delete;
     private Button move;
 
+    private MessageModel applicationModel;
+
     public MessageView() {
         setMargin(true);
         setSpacing(true);
@@ -72,16 +74,17 @@ public class MessageView extends VerticalLayout implements MessageModel.Observer
             applicationModel.forward.bind(forward);
             applicationModel.delete.bind(delete);
             applicationModel.move.bind(move);
-        } else {
-            applicationModel.sender.unbind(from);
-            applicationModel.recipient.unbind(to);
-            applicationModel.cc.unbind(cc);
-            applicationModel.subject.unbind(subject);
-            applicationModel.body.unbind(body);
-            applicationModel.reply.unbind(reply);
-            applicationModel.forward.unbind(forward);
-            applicationModel.delete.unbind(delete);
-            applicationModel.move.unbind(move);
+        } else if (this.applicationModel != null) {
+            this.applicationModel.sender.unbind(from);
+            this.applicationModel.recipient.unbind(to);
+            this.applicationModel.cc.unbind(cc);
+            this.applicationModel.subject.unbind(subject);
+            this.applicationModel.body.unbind(body);
+            this.applicationModel.reply.unbind(reply);
+            this.applicationModel.forward.unbind(forward);
+            this.applicationModel.delete.unbind(delete);
+            this.applicationModel.move.unbind(move);
         }
+        this.applicationModel = applicationModel;
     }
 }

@@ -36,15 +36,28 @@ The demo application that I wrote to try this out is a mail client with three di
 a table with messages in the selected folder and a view showing the currently selected message. The code can be 
 found in the [demo](src/main/java/org/vaadin/am4v/demo) package. 
 
-Please note that the UI is neatly split up into components and that the components themselves are fairly simple. Also
-note that the entire UI could have been built without a single model. This means that you can start up the development
-by building the UI, splitting it up into components as you see fit and then add the models afterwards - or leave them
-out.
+## What I like about this pattern
+
+* It is a UI first pattern - I can build the entire UI without writing a single model.
+* I can split up the UI in as many components I want since many components can share the same model.
+* I can use Vaadin Designer if I want to build the UI, then plug in the models afterwards.
+* With the help of the framework classes there really is not much boilerplate code. Thanks to lambdas the amount of
+  code needed to write an action is about the same as writing a click listener.
+* By using events, adapters and listeners, I can reduce the amount of long method chaining.
+
+## What I don't like about this pattern
+
+* I had to write some framework code to get the pattern really usable. Having to reimplement all these classes for every 
+  new project is not feasable. A best practice relying on an external add-on is IMO not a best practice.
+* The decoupled way of communicating via events and listeners can be difficult to debug since you don't know what
+  components will react to a certain event until during runtime.
+* The Vaadin containers are problematic. There is a need for a better API that the models can use and than can be
+  wrapped by Vaadin containers.
 
 ## Open questions
 
+* The way windows (dialogs) are handled needs a redesign. I'm still not happy with it (this is the second design iteration).
 * Is this pattern still too complex to be useful in a real project?
-* Could the amount of boiler plate code be reduced?
+* Could the amount of boiler plate code be reduced even more?
 * Does it cover all common use cases?
-* The way windows (dialogs) are handled needs a redesign. I'm not happy with it.
 * How to handle cases where containers need to be shared between multiple views?

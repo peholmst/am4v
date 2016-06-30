@@ -13,14 +13,11 @@ import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.ui.Notification;
 
 /**
- * This is the model containing all the folders. It is a direct child of the {@code MainModel} and also interacts
- * directly with the {@link AddFolderModel}. You can argue whether that is a good or bad design decision (the
- * alternative had been to publish a message that the {@code AddFolderModel} would have responded to).
+ * This is the model containing all the folders. It is a direct child of the {@code MainModel}.
  */
 public class FolderTreeModel extends ApplicationModel {
 
     private boolean initialized = false;
-    private AddFolderModel addFolderModel;
 
     /**
      * Hierarchical container of the folder tree. Exposing this as a Vaadin container is a bit problematic if there
@@ -98,14 +95,12 @@ public class FolderTreeModel extends ApplicationModel {
         if (parent == null) {
             parent = selected.getValue();
         }
-        if (addFolderModel != null) {
-            addFolderModel.show(parent);
-        }
+        // TODO Should probably use constants here instead of strings
+        getWindowStrategy().showWindow("addFolder", "parent", parent);
     });
 
-    public FolderTreeModel(MainModel parent, AddFolderModel addFolderModel) {
+    public FolderTreeModel(MainModel parent) {
         super(parent);
-        this.addFolderModel = addFolderModel;
         // When a new folder is added, we want to refresh the tree.
         registerMessageHandler(FolderAdded.class, (source, msg) -> refresh.run());
         selected.addValueChangeListener(evt -> {

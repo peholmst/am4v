@@ -2,6 +2,10 @@ package org.vaadin.am4v.demo.ui;
 
 import javax.servlet.annotation.WebServlet;
 
+import org.vaadin.am4v.demo.domain.Folder;
+import org.vaadin.am4v.framework.ui.ProviderBasedWindowStrategy;
+import org.vaadin.am4v.framework.ui.SingleWindowProvider;
+
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
@@ -18,13 +22,17 @@ import com.vaadin.ui.themes.ValoTheme;
 public class MainUI extends UI {
 
     private final MainModel mainModel = new MainModel();
-    private final AddFolderModel addFolderModel = new AddFolderModel(mainModel);
-    private final FolderTreeModel folderTreeModel = new FolderTreeModel(mainModel, addFolderModel);
+    private final FolderTreeModel folderTreeModel = new FolderTreeModel(mainModel);
     private final MessageListModel messageListModel = new MessageListModel(folderTreeModel);
     private final MessageModel messageModel = new MessageModel(messageListModel);
 
     @Override
     protected void init(VaadinRequest request) {
+        mainModel.setWindowStrategy(
+            // TODO This feels too complex! But still better than the previous approach. The work continues...
+            new ProviderBasedWindowStrategy().addProvider(new SingleWindowProvider("addFolder",
+                params -> new AddFolderWindow(mainModel, (Folder) params.get("parent")))));
+
         final HorizontalSplitPanel rootPanel = new HorizontalSplitPanel();
         rootPanel.setSizeFull();
         rootPanel.setSplitPosition(20, Unit.PERCENTAGE);
@@ -51,8 +59,6 @@ public class MainUI extends UI {
         final VerticalLayout noMessageSelectedView = new VerticalLayout(new Label("No message selected"));
         noMessageSelectedView.setMargin(true);
         messagePanel.setSecondComponent(noMessageSelectedView);
-
-        new AddFolderView(addFolderModel);
 
         // The main view is responsible for showing or hiding the views. This makes the view implementations
         // simpler.

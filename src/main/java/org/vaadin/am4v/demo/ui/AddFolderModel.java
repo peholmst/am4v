@@ -5,7 +5,6 @@ import org.vaadin.am4v.demo.domain.FolderService;
 import org.vaadin.am4v.framework.model.ApplicationAction;
 import org.vaadin.am4v.framework.model.ApplicationModel;
 import org.vaadin.am4v.framework.model.ApplicationProperty;
-import org.vaadin.am4v.framework.model.WindowApplicationModel;
 
 import com.vaadin.data.Validator;
 import com.vaadin.data.validator.StringLengthValidator;
@@ -16,9 +15,9 @@ import com.vaadin.data.validator.StringLengthValidator;
  * simpler way of popping up a window and committing/validating a form. Maybe
  * {@link com.vaadin.data.fieldgroup.FieldGroup}s should be included in the design in some way?
  */
-public class AddFolderModel extends WindowApplicationModel {
+public class AddFolderModel extends ApplicationModel {
 
-    private final ApplicationProperty<Folder> parent = new ApplicationProperty<>(null, Folder.class);
+    private Folder parentFolder;
 
     /**
      * Property containing the name of the new folder.
@@ -31,28 +30,19 @@ public class AddFolderModel extends WindowApplicationModel {
     public final ApplicationAction create = new ApplicationAction(action -> {
         try {
             name.validate();
-            Folder folder = FolderService.getInstance().addFolder(parent.getValue(), name.getValue(), true);
+            Folder folder = FolderService.getInstance().addFolder(parentFolder, name.getValue(), true);
             broadcastMessage(new FolderAdded(folder));
-            hide();
+            // hide();
         } catch (Validator.InvalidValueException ex) {
             // NOP, the UI is already showing the error
         }
     });
 
-    public AddFolderModel(ApplicationModel parent) {
-        super(parent);
-        init();
-    }
-
-    public void show(Folder parent) {
-        // I don't like the need to reset the model like this. Should come up with something better.
-        this.parent.setValue(parent);
-        this.name.setValue(null);
-        show();
-    }
-
-    private void init() {
+    public AddFolderModel(MainModel parentModel, Folder parentFolder) {
+        super(parentModel);
+        this.parentFolder = parentFolder;
         name.addValidator(
             new StringLengthValidator("Please provide a name for the folder", 1, Integer.MAX_VALUE, false));
     }
+
 }

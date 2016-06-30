@@ -28,6 +28,7 @@ public abstract class ApplicationModel implements Serializable {
     private NavigatorStrategy navigatorStrategy;
     private PushStrategy pushStrategy;
     private NotificationStrategy notificationStrategy;
+    private WindowStrategy windowStrategy;
     private final Set<MessageHandlerRegistration> messageHandlers = new HashSet<>();
 
     /**
@@ -39,12 +40,15 @@ public abstract class ApplicationModel implements Serializable {
      *        default}.
      * @param notificationStrategy the notification strategy to use, or {@code null} to use the
      *        {@link NotificationStrategy#getDefault() default}.
+     * @param windowStrategy the window strategy to use, or {@code null} to use the {@link WindowStrategy#getDefault()
+     *        default}.
      */
     public ApplicationModel(NavigatorStrategy navigatorStrategy, PushStrategy pushStrategy,
-        NotificationStrategy notificationStrategy) {
+        NotificationStrategy notificationStrategy, WindowStrategy windowStrategy) {
         setNavigatorStrategy(navigatorStrategy);
         setPushStrategy(pushStrategy);
         setNotificationStrategy(notificationStrategy);
+        setWindowStrategy(windowStrategy);
         parent = null;
     }
 
@@ -54,9 +58,11 @@ public abstract class ApplicationModel implements Serializable {
      * @see NavigatorStrategy#getDefault()
      * @see PushStrategy#getDefault()
      * @see NotificationStrategy#getDefault()
+     * @see WindowStrategy#getDefault()
      */
     public ApplicationModel() {
-        this(NavigatorStrategy.getDefault(), PushStrategy.getDefault(), NotificationStrategy.getDefault());
+        this(NavigatorStrategy.getDefault(), PushStrategy.getDefault(), NotificationStrategy.getDefault(),
+            WindowStrategy.getDefault());
     }
 
     /**
@@ -78,7 +84,7 @@ public abstract class ApplicationModel implements Serializable {
      * @param messageClass the class of the messages to receive.
      * @param messageHandler the message handler.
      */
-    protected final <M> void registerMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
+    public final <M> void registerMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
         Objects.requireNonNull(messageClass);
         Objects.requireNonNull(messageHandler);
         messageHandlers.add(new MessageHandlerRegistration(messageClass, messageHandler));
@@ -90,7 +96,7 @@ public abstract class ApplicationModel implements Serializable {
      * @param messageClass the class of the messages to receive.
      * @param messageHandler the message handler.
      */
-    protected final <M> void unregisterMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
+    public final <M> void unregisterMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
         Objects.requireNonNull(messageClass);
         Objects.requireNonNull(messageHandler);
         messageHandlers.remove(new MessageHandlerRegistration(messageClass, messageHandler));
@@ -108,15 +114,20 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     private void forwardMessage(ApplicationModel source, Object message) {
-        messageHandlers.stream().filter(h -> h.supports(message)).forEach(h -> h.handleMessage(source, message));
-        if (parent != null) {
-            parent.forwardMessage(source, message);
+        // Store the parent in case any of the message handlers detaches the model from its parent.
+        // The message should still reach all models in the hierarchy.
+        ApplicationModel p = parent;
+        new HashSet<>(messageHandlers).stream().filter(h -> h.supports(message))
+            .forEach(h -> h.handleMessage(source, message));
+        if (p != null) {
+            p.forwardMessage(source, message);
         }
     }
 
     private void onParentMessage(ApplicationModel source, Object message) {
         if (source != this) {
-            messageHandlers.stream().filter(h -> h.supports(message)).forEach(h -> h.handleMessage(source, message));
+            new HashSet<>(messageHandlers).stream().filter(h -> h.supports(message))
+                .forEach(h -> h.handleMessage(source, message));
         }
     }
 
@@ -145,6 +156,34 @@ public abstract class ApplicationModel implements Serializable {
             this.navigatorStrategy = navigatorStrategy;
         } else {
             this.navigatorStrategy = navigatorStrategy == null ? NavigatorStrategy.getDefault() : navigatorStrategy;
+        }
+    }
+
+    /**
+     * Returns the {@link WindowStrategy} to use. If this model has a parent and no strategy has been explicitly set,
+     * the strategy of the parent is returned.
+     * 
+     * @return the window strategy (never {@code null}).
+     */
+    public final WindowStrategy getWindowStrategy() {
+        if (windowStrategy == null && parent != null) {
+            return parent.getWindowStrategy();
+        }
+        return windowStrategy;
+    }
+
+    /**
+     * Sets the window strategy to use.
+     *
+     * @see #getWindowStrategy()
+     * @param windowStrategy the window strategy or {@code null} to use the {@link WindowStrategy#getDefault()
+     *        default} or inherit from the parent model.
+     */
+    public final void setWindowStrategy(WindowStrategy windowStrategy) {
+        if (parent != null) {
+            this.windowStrategy = windowStrategy;
+        } else {
+            this.windowStrategy = windowStrategy == null ? WindowStrategy.getDefault() : windowStrategy;
         }
     }
 
@@ -211,7 +250,7 @@ public abstract class ApplicationModel implements Serializable {
      * 
      * @see #detachFromParent()
      * @see #ApplicationModel(ApplicationModel)
-     * @see #getParentAs(Class)
+     * @see #adapt(Class)
      * @return the parent model.
      */
     protected final Optional<ApplicationModel> getParent() {
@@ -219,14 +258,26 @@ public abstract class ApplicationModel implements Serializable {
     }
 
     /**
-     * Returns the parent of this model if it has one, cast to the specified class if that cast is possible.
-     *
-     * @see #getParent()
-     * @param clazz the clazz to which the parent model should be cast.
-     * @return the parent model.
+     * Attempts to adapt this model or any of its parent models to the specified class. This implementation will
+     * check if this model is an instance of the specified class. If it is, this model is returned. Otherwise, it will
+     * move up one step in the hierarchy and try again until a match is found or the root is reached. The purpose
+     * of this method is to make it easy to access shared state from models higher up in the hierarchy.
+     * <p>
+     * Subclasses may override if they wish to support other means of adapting to a class than implementing an
+     * interface or extending a base class.
+     * 
+     * @param clazz the class to adapt to.
+     * @return the closest model in the hierarchy that supported the adapter.
      */
-    protected final <M extends ApplicationModel> Optional<M> getParentAs(Class<M> clazz) {
-        return getParent().filter(clazz::isInstance).map(clazz::cast);
+    protected <A> Optional<A> adapt(Class<A> clazz) {
+        Objects.requireNonNull(clazz);
+        if (clazz.isInstance(this)) {
+            return Optional.of(clazz.cast(this));
+        } else if (parent != null) {
+            return parent.adapt(clazz);
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -251,6 +302,9 @@ public abstract class ApplicationModel implements Serializable {
             }
             if (navigatorStrategy == null) {
                 navigatorStrategy = NavigatorStrategy.getDefault();
+            }
+            if (windowStrategy == null) {
+                windowStrategy = WindowStrategy.getDefault();
             }
             detach();
             parent = null;
@@ -285,7 +339,7 @@ public abstract class ApplicationModel implements Serializable {
      * @see #broadcastMessage(Object)
      */
     @FunctionalInterface
-    protected interface MessageHandler<M> extends Serializable {
+    public interface MessageHandler<M> extends Serializable {
 
         /**
          * Called when a message has been received.
