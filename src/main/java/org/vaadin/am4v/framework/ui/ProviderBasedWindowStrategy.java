@@ -1,13 +1,13 @@
 package org.vaadin.am4v.framework.ui;
 
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+import org.vaadin.am4v.framework.model.Parameters;
 import org.vaadin.am4v.framework.model.WindowStrategy;
 
 import com.vaadin.ui.UI;
+import com.vaadin.ui.Window;
 
 /**
  * An implementation of {@link WindowStrategy} that uses {@link WindowProvider}s to create {@link com.vaadin.ui.Window}
@@ -18,13 +18,13 @@ public class ProviderBasedWindowStrategy implements WindowStrategy {
     private final Set<WindowProvider> windowProviders = new HashSet<>();
 
     @Override
-    public void showWindow(String window, Map<String, Object> parameters) {
+    public void showWindow(String window, Parameters parameters) {
         UI ui = UI.getCurrent();
         if (ui == null) {
             throw new IllegalStateException("No UI bound to current thread");
         }
         if (parameters == null) {
-            parameters = Collections.emptyMap();
+            parameters = new Parameters();
         }
         WindowProvider windowProvider = windowProviders.stream().filter(p -> p.hasWindow(window)).findAny()
             .orElseThrow(() -> new IllegalArgumentException("No such window: " + window));
@@ -42,6 +42,36 @@ public class ProviderBasedWindowStrategy implements WindowStrategy {
             windowProviders.add(windowProvider);
         }
         return this;
+    }
+
+    /**
+     * Utility method that creates, registers and returns a new {@link SingleWindowProvider}. This method is provided
+     * for developer convenience only.
+     * 
+     * @see SingleWindowProvider#SingleWindowProvider(String, Class)
+     * @param windowName the name of the window.
+     * @param windowClass the type of the window.
+     * @return the window provider.
+     */
+    public <W extends Window & ParameterizedWindow> WindowProvider addWindow(String windowName, Class<W> windowClass) {
+        WindowProvider windowProvider = new SingleWindowProvider(windowName, windowClass);
+        addProvider(windowProvider);
+        return windowProvider;
+    }
+
+    /**
+     * Utility method that creates, registers and returns a new {@link SingleWindowProvider}. This method is provided
+     * for developer convenience only.
+     *
+     * @see SingleWindowProvider#SingleWindowProvider(Class)
+     * @see WindowName
+     * @param windowClass the type of the window.
+     * @return the window provider.
+     */
+    public <W extends Window & ParameterizedWindow> WindowProvider addWindow(Class<W> windowClass) {
+        WindowProvider windowProvider = new SingleWindowProvider(windowClass);
+        addProvider(windowProvider);
+        return windowProvider;
     }
 
     /**

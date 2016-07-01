@@ -1,8 +1,6 @@
 package org.vaadin.am4v.framework.model;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Strategy for showing {@link com.vaadin.ui.Window}s from within application models. By abstracting this away,
@@ -17,7 +15,7 @@ public interface WindowStrategy extends Serializable {
      * @param window the name of the window to show.
      * @param parameters any parameters to pass to the window.
      */
-    void showWindow(String window, Map<String, Object> parameters);
+    void showWindow(String window, Parameters parameters);
 
     /**
      * Shows the specified window.
@@ -26,8 +24,8 @@ public interface WindowStrategy extends Serializable {
      * @param paramName the name of the single parameter to pass to the window.
      * @param paramValue the value of the single parameter to pass to the window.
      */
-    default void showWindow(String window, String paramName, Object paramValue) {
-        showWindow(window, Collections.singletonMap(paramName, paramValue));
+    default void showWindow(String window, Object paramName, Object paramValue) {
+        showWindow(window, new Parameters().setParameter(paramName, paramValue));
     }
 
     /**
@@ -36,7 +34,7 @@ public interface WindowStrategy extends Serializable {
      * @param window the name of the window to show.
      */
     default void showWindow(String window) {
-        showWindow(window, Collections.emptyMap());
+        showWindow(window, new Parameters());
     }
 
     /**

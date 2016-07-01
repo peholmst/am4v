@@ -2,22 +2,25 @@ package org.vaadin.am4v.demo.ui;
 
 import org.vaadin.am4v.demo.domain.Folder;
 import org.vaadin.am4v.framework.model.ApplicationModel;
+import org.vaadin.am4v.framework.model.Parameters;
+import org.vaadin.am4v.framework.ui.ParameterizedWindow;
+import org.vaadin.am4v.framework.ui.WindowName;
 
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.ui.*;
 
-public class AddFolderWindow extends Window {
+@WindowName(AddFolderWindow.WINDOW_NAME)
+public class AddFolderWindow extends Window implements ParameterizedWindow {
+
+    public static final String WINDOW_NAME = "addFolderWindow";
 
     private TextField name;
     private Button create;
 
     private AddFolderModel applicationModel;
 
-    public AddFolderWindow(MainModel mainModel, Folder parentFolder) {
+    public AddFolderWindow() {
         super("Add Folder");
-        // Not sure there is even a need for a separate model here...
-        applicationModel = new AddFolderModel(mainModel, parentFolder);
-        applicationModel.registerMessageHandler(FolderAdded.class, (source, folder) -> close());
         setModal(true);
         center();
 
@@ -30,7 +33,6 @@ public class AddFolderWindow extends Window {
         layout.addComponent(name);
         name.setImmediate(true);
         name.setNullRepresentation("");
-        applicationModel.name.bind(name);
 
         HorizontalLayout buttons = new HorizontalLayout();
         buttons.setSpacing(true);
@@ -39,7 +41,6 @@ public class AddFolderWindow extends Window {
         create = new Button("Create");
         create.setClickShortcut(ShortcutAction.KeyCode.ENTER);
         buttons.addComponent(create);
-        applicationModel.create.bind(create);
 
         Button cancel = new Button("Cancel", evt -> close());
         cancel.setClickShortcut(ShortcutAction.KeyCode.ESCAPE);
@@ -49,12 +50,20 @@ public class AddFolderWindow extends Window {
 
     @Override
     public void detach() {
-        applicationModel.detachFromParent();
+        if (applicationModel != null) {
+            applicationModel.detachFromParent();
+        }
         super.detach();
     }
 
-    private void onFolderAdded(ApplicationModel source, FolderAdded folderAdded) {
-
+    @Override
+    public void setParameters(Parameters parameters) {
+        ApplicationModel parentModel = parameters.getParameter(ApplicationModel.class);
+        Folder parentFolder = parameters.getParameter(Folder.class);
+        // Not sure there is even a need for a separate model here...
+        applicationModel = new AddFolderModel(parentModel, parentFolder);
+        applicationModel.getName().bind(name);
+        applicationModel.getCreate().bind(create);
+        applicationModel.getWindowClosed().addValueChangeListener(evt -> close());
     }
-
 }

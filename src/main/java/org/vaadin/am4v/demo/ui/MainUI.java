@@ -2,7 +2,6 @@ package org.vaadin.am4v.demo.ui;
 
 import javax.servlet.annotation.WebServlet;
 
-import org.vaadin.am4v.demo.domain.Folder;
 import org.vaadin.am4v.framework.ui.ProviderBasedWindowStrategy;
 import org.vaadin.am4v.framework.ui.SingleWindowProvider;
 
@@ -28,10 +27,11 @@ public class MainUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        mainModel.setWindowStrategy(
-            // TODO This feels too complex! But still better than the previous approach. The work continues...
-            new ProviderBasedWindowStrategy().addProvider(new SingleWindowProvider("addFolder",
-                params -> new AddFolderWindow(mainModel, (Folder) params.get("parent")))));
+        // The idea is to set up the WindowStrategy in the same way you would set up the Navigator if you were using
+        // views and the navigation API.
+        ProviderBasedWindowStrategy windowStrategy = new ProviderBasedWindowStrategy();
+        windowStrategy.addWindow(AddFolderWindow.class);
+        mainModel.setWindowStrategy(windowStrategy);
 
         final HorizontalSplitPanel rootPanel = new HorizontalSplitPanel();
         rootPanel.setSizeFull();

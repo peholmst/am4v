@@ -84,7 +84,7 @@ public abstract class ApplicationModel implements Serializable {
      * @param messageClass the class of the messages to receive.
      * @param messageHandler the message handler.
      */
-    public final <M> void registerMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
+    protected final <M> void registerMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
         Objects.requireNonNull(messageClass);
         Objects.requireNonNull(messageHandler);
         messageHandlers.add(new MessageHandlerRegistration(messageClass, messageHandler));
@@ -96,7 +96,7 @@ public abstract class ApplicationModel implements Serializable {
      * @param messageClass the class of the messages to receive.
      * @param messageHandler the message handler.
      */
-    public final <M> void unregisterMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
+    protected final <M> void unregisterMessageHandler(Class<? super M> messageClass, MessageHandler<M> messageHandler) {
         Objects.requireNonNull(messageClass);
         Objects.requireNonNull(messageHandler);
         messageHandlers.remove(new MessageHandlerRegistration(messageClass, messageHandler));
@@ -117,8 +117,7 @@ public abstract class ApplicationModel implements Serializable {
         // Store the parent in case any of the message handlers detaches the model from its parent.
         // The message should still reach all models in the hierarchy.
         ApplicationModel p = parent;
-        new HashSet<>(messageHandlers).stream().filter(h -> h.supports(message))
-            .forEach(h -> h.handleMessage(source, message));
+        notifyMessageHandlers(source, message);
         if (p != null) {
             p.forwardMessage(source, message);
         }
@@ -126,9 +125,13 @@ public abstract class ApplicationModel implements Serializable {
 
     private void onParentMessage(ApplicationModel source, Object message) {
         if (source != this) {
-            new HashSet<>(messageHandlers).stream().filter(h -> h.supports(message))
-                .forEach(h -> h.handleMessage(source, message));
+            notifyMessageHandlers(source, message);
         }
+    }
+
+    private void notifyMessageHandlers(ApplicationModel source, Object message) {
+        new HashSet<>(messageHandlers).stream().filter(h -> h.supports(message))
+            .forEach(h -> h.handleMessage(source, message));
     }
 
     /**

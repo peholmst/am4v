@@ -2,10 +2,7 @@ package org.vaadin.am4v.demo.ui;
 
 import org.vaadin.am4v.demo.domain.Folder;
 import org.vaadin.am4v.demo.domain.FolderService;
-import org.vaadin.am4v.framework.model.ApplicationAction;
-import org.vaadin.am4v.framework.model.ApplicationModel;
-import org.vaadin.am4v.framework.model.ApplicationProperty;
-import org.vaadin.am4v.framework.model.ContextualApplicationAction;
+import org.vaadin.am4v.framework.model.*;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
@@ -95,8 +92,8 @@ public class FolderTreeModel extends ApplicationModel {
         if (parent == null) {
             parent = selected.getValue();
         }
-        // TODO Should probably use constants here instead of strings
-        getWindowStrategy().showWindow("addFolder", "parent", parent);
+        getWindowStrategy().showWindow(AddFolderWindow.WINDOW_NAME,
+            new Parameters().setParameter(Folder.class, parent).setParameter(ApplicationModel.class, this));
     });
 
     public FolderTreeModel(MainModel parent) {

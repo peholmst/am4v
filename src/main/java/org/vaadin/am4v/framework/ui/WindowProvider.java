@@ -1,7 +1,8 @@
 package org.vaadin.am4v.framework.ui;
 
 import java.io.Serializable;
-import java.util.Map;
+
+import org.vaadin.am4v.framework.model.Parameters;
 
 import com.vaadin.ui.Window;
 
@@ -29,5 +30,5 @@ public interface WindowProvider extends Serializable {
      * @param parameters the parameters to pass to the window (never {@code null} but may be empty).
      * @return the window.
      */
-    Window getWindow(String name, Map<String, Object> parameters);
+    Window getWindow(String name, Parameters parameters);
 }
