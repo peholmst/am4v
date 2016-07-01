@@ -56,7 +56,7 @@ found in the [demo](src/main/java/org/vaadin/am4v/demo) package.
 
 ## Open questions
 
-* The way windows (dialogs) are handled needs a redesign. I'm still not happy with it (this is the second design iteration).
+* The way windows (dialogs) are handled needs a redesign. I'm still not happy with it (this is the third design iteration).
 * Is this pattern still too complex to be useful in a real project?
 * Could the amount of boiler plate code be reduced even more?
 * Does it cover all common use cases?
